@@ -1,0 +1,41 @@
+
+
+@doc Fast Fourier Transform algorithm
+@param u Input array with random access interface
+@param v Output array with random access interface
+@assert uj - ui == vj - vi
+@assert ispowerof2( uj - ui )
+@assert 2*m == 2**l
+
+def fft ( l , m , u , ui , uj , v , vi , vj ) :
+
+	if l == 0 : return
+
+	@unzip( u , ui , uj , v , vi , vj )
+
+	$( l - 1 , m / 2 , v , vi , vi + m , u , ui , ui + m )
+	$( l - 1 , m / 2 , v , vi + m , vj , u , ui + m , uj )
+
+	val z = @root( l )
+	var w = 1
+
+	for k from 0 to m - 1 :
+
+		v[ vi+k ] = u[ui+k] + w * u[ui+m+k]
+		v[vi+m+k] = u[ui+k] - w * u[ui+m+k]
+
+		w *= z
+
+
+# for C
+z = l => cos( pi / 2**(l-1) ) + i sin( pi / 2 **(l-1) )
+bind fft with ( @root = z , @unzip = ... ) as f
+
+# for Z_p
+z = primitives( l = ... )
+bind fft with ( @root = z , @unzip = ... ) as f
+# z( ... ) or z[ ... ] works the same for arrays
+
+# or make root the first argument
+parameterize fft with ( @root = 0 ) as f
+bind f with ( @unzip = ... ) as f
